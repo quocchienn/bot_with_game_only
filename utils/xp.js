@@ -34,7 +34,7 @@ export default async (ctx, next) => {
   const text = msg.text || msg.caption || '';
   if (!text) return next();
 
-  // Chỉ xử lý trong group / supergroup
+  // ❗ Chỉ xử lý trong group / supergroup
   if (!msg.chat || (msg.chat.type !== 'group' && msg.chat.type !== 'supergroup')) {
     return next();
   }
@@ -42,23 +42,23 @@ export default async (ctx, next) => {
   const now = new Date();
   const trimmed = text.trim();
 
-let user = await User.findOne({ telegramId: from.id });
-if (!user) {
-  user = await User.create({
-    telegramId: from.id,
-    username: from.username || '',
-    role: DEFAULT_ADMINS.includes(from.id) ? 'admin' : 'user'
-  });
-}
+  let user = await User.findOne({ telegramId: from.id });
+  if (!user) {
+    user = await User.create({
+      telegramId: from.id,
+      username: from.username || '',
+      role: DEFAULT_ADMINS.includes(from.id) ? 'admin' : 'user'
+    });
+  }
 
-// ✅ mỗi tin nhắn trong group đếm 1 lần
-user.messageCount = (user.messageCount || 0) + 1;
+  // ✅ mỗi tin nhắn trong group đếm 1 lần
+  user.messageCount = (user.messageCount || 0) + 1;
 
-// nhiệm vụ ngày
-await ensureDailyMission(user._id);
-await updateMissionProgress(user, ctx);
+  // Nhiệm vụ ngày
+  await ensureDailyMission(user._id);
+  await updateMissionProgress(user, ctx);
 
-if (user.banned) return next();
+  if (user.banned) return next();
 
   // ========== CỘNG XP VỚI GIỚI HẠN PHÚT / NGÀY ==========
 
@@ -111,7 +111,7 @@ if (user.banned) return next();
     return next();
   }
 
-  // ===== LEVEL UP + THƯỞNG COIN (A + B) =====
+  // ===== LEVEL UP + THƯỞNG COIN =====
 
   const oldLevel = calcLevel(user.totalXP); // Level trước khi cộng XP
 
