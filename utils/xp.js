@@ -59,52 +59,6 @@ await ensureDailyMission(user._id);
 await updateMissionProgress(user, ctx);
 
 if (user.banned) return next();
-  // ========== ANTI-SPAM ==========
-
-  // 1) Lặp y chang tin trước trong vòng 3 giây → cảnh cáo
-  if (user.lastMessageText === trimmed && user.lastMessageAt) {
-    const diffSec = (now - user.lastMessageAt) / 1000;
-    if (diffSec <= 3) {
-      await addWarning(user, ctx);
-      user.lastMessageAt = now;
-      await user.save();
-      return next();
-    }
-  }
-
-  // 2) Flood control: quá nhiều tin trong cửa sổ ngắn
-  const windowSec = config.spam?.windowSeconds || 10;
-  const maxMsgs = config.spam?.maxMsgsPerWindow || 7;
-
-  if (!user.spamWindowStart) {
-    user.spamWindowStart = now;
-    user.spamCount = 1;
-  } else {
-    const diffSec = (now - user.spamWindowStart) / 1000;
-    if (diffSec <= windowSec) {
-      user.spamCount += 1;
-    } else {
-      // Reset cửa sổ
-      user.spamWindowStart = now;
-      user.spamCount = 1;
-    }
-  }
-
-  if (user.spamCount > maxMsgs) {
-    await addWarning(user, ctx);
-    user.lastMessageText = trimmed;
-    user.lastMessageAt = now;
-    await user.save();
-    return next();
-  }
-
-  // Nếu đã bị mute thì không cộng XP nữa
-  if (user.muted) {
-    user.lastMessageText = trimmed;
-    user.lastMessageAt = now;
-    await user.save();
-    return next();
-  }
 
   // ========== CỘNG XP VỚI GIỚI HẠN PHÚT / NGÀY ==========
 
