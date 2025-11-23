@@ -31,8 +31,20 @@ async function addWarning(user, ctx) {
 
   let actionText = '';
 
+// Thêm cảnh cáo spam – sau 3 lần thì auto mute
+async function addWarning(user, ctx) {
+  // đảm bảo luôn là số
+  if (typeof user.warningCount !== 'number') {
+    user.warningCount = 0;
+  }
+
+  user.warningCount += 1;
+  user.lastWarnAt = new Date();
+
+  let actionText = '';
+
   // Sau 3 lần cảnh cáo thì auto mute
-  if (user.warnCount >= 3 && !user.muted) {
+  if (user.warningCount >= 3 && !user.muted) {
     user.muted = true;
     actionText = '\nBạn đã bị mute vì spam. Liên hệ admin nếu cần mở.';
     try {
@@ -42,7 +54,7 @@ async function addWarning(user, ctx) {
         });
       }
     } catch (e) {
-      console.log('Mute error in warning:', e.message);
+      console.log('Restrict member error:', e.message);
     }
   }
 
@@ -50,7 +62,7 @@ async function addWarning(user, ctx) {
 
   try {
     await ctx.reply(
-      `⚠️ Cảnh cáo spam (${user.warnCount}/3).` + actionText,
+      `⚠️ Cảnh cáo spam (${user.warningCount}/3).` + actionText,
       { reply_to_message_id: ctx.message?.message_id }
     );
   } catch (e) {
