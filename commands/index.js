@@ -47,7 +47,13 @@ async function isAdmin(userId) {
 
 export default (bot) => {
   // Bot game: chỉ giữ các lệnh game, shop, daily, team/clan
-
+  bot.use((ctx, next) => {
+    const type = ctx.chat?.type;
+    if (type === 'private') {
+      return; // im re, không trả lời, không xử lý gì
+    }
+    return next();
+  });
 bot.start(async (ctx) => {
   await ctx.reply(
     [
