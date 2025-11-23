@@ -24,52 +24,6 @@ export function calcLevel(xp) {
   return lv < 1 ? 1 : lv;
 }
 
-// Thêm cảnh cáo spam – sau 3 lần thì auto mute
-async function addWarning(user, ctx) {
-  user.warnCount += 1;
-  user.lastWarnAt = new Date();
-
-  let actionText = '';
-
-// Thêm cảnh cáo spam – sau 3 lần thì auto mute
-async function addWarning(user, ctx) {
-  // đảm bảo luôn là số
-  if (typeof user.warningCount !== 'number') {
-    user.warningCount = 0;
-  }
-
-  user.warningCount += 1;
-  user.lastWarnAt = new Date();
-
-  let actionText = '';
-
-  // Sau 3 lần cảnh cáo thì auto mute
-  if (user.warningCount >= 3 && !user.muted) {
-    user.muted = true;
-    actionText = '\nBạn đã bị mute vì spam. Liên hệ admin nếu cần mở.';
-    try {
-      if (ctx.chat && (ctx.chat.type === 'group' || ctx.chat.type === 'supergroup')) {
-        await ctx.telegram.restrictChatMember(ctx.chat.id, user.telegramId, {
-          can_send_messages: false
-        });
-      }
-    } catch (e) {
-      console.log('Restrict member error:', e.message);
-    }
-  }
-
-  await user.save();
-
-  try {
-    await ctx.reply(
-      `⚠️ Cảnh cáo spam (${user.warningCount}/3).` + actionText,
-      { reply_to_message_id: ctx.message?.message_id }
-    );
-  } catch (e) {
-    console.log('Warn reply error:', e.message);
-  }
-}
-
 // Middleware chính – dùng trong bot.use(xpHandler)
 export default async (ctx, next) => {
   if (!ctx.message) return next();
